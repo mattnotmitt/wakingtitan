@@ -1,0 +1,20 @@
+{
+  "prefix": "matt",
+  "token": "",
+  "activeChannels": [""],
+  "ownerID": "",
+  "twitter": {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": "",
+    "access_token_secret": ""
+  },
+  "WTTwitter": {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": "",
+    "access_token_secret": ""
+  },
+  "wiki_user": "",
+  "wiki_pass": ""
+}

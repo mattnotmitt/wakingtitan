@@ -1,0 +1,45 @@
+{
+  "name": "WTBot",
+  "version": "0.0.1",
+  "description": "Discord Bot for Waking Titan ARG",
+  "main": "main.js",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "css-select": "^1.3.0-rc0",
+    "discord.js": "^11.1.0",
+    "fs-jetpack": "^0.10.5",
+    "he": "^1.1.1",
+    "humanize-duration": "^3.10.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.17.1",
+    "nodemw": "^0.10.1",
+    "request-promise-native": "^1.0.4",
+    "strftime": "^0.10.0",
+    "twit": "^2.2.9"
+  },
+  "devDependencies": {
+    "eslint": "^3.12.2",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-react": "^6.8.0",
+    "eslint-plugin-standard": "^2.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artemisbot/wakingtitan.git"
+  },
+  "keywords": [
+    "discord",
+    "discord.js",
+    "selfbot"
+  ],
+  "author": "Matt C [matt@artemisbot.uk]",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/artemisbot/wakingtitan/issues"
+  },
+  "homepage": "https://github.com/artemisbot/wakingtitan"
+}
