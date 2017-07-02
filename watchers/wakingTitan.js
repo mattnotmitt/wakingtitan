@@ -44,6 +44,7 @@ exports.data = {
 exports.watcher = async(bot) => {
   // In case of restarting this watcher, kill all loops
   this.disable()
+  bot.log(exports.data.name, 'Waking Titan has initialised successfully.')
   repeat = setInterval(async() => {
     checkStations(bot)
     checkGlyphs(bot)
@@ -186,6 +187,7 @@ const checkSites = async(bot) => {
   const data = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
   for (let site of data.wakingTitan.sites) {
     request(site).then(async body => {
+      // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
       const pageCont = body.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>/ig, ''),
         oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-latest.html`)
       if (pageCont !== oldCont) {
@@ -205,12 +207,18 @@ const checkSites = async(bot) => {
             },
             description: 'I am but a stupid bot, so I can\'t tell you what changed.'
           })
+          /*
+          if (site === 'http://superlumina-6c.com' && /<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.test(pageCont)) {
+            embed.setDescription(`**Percentages have changed.**\n${/<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.exec(pageCont).slice(1, 6).join('\n')}`)
+          } else {
+            T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
+          } */
+          T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
           for (let channel of data.wakingTitan.channels) {
             bot.channels.get(channel).send('', {
               embed: embed
             })
           }
-          T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
           await request(`https://web.archive.org/save/${site}`)
           jetpack.write(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-latest.html`, pageCont)
           jetpack.write(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-logs/${strftime('%F - %H-%M-%S')}.html`, pageCont)
@@ -318,7 +326,6 @@ ${table}|}
       bot.log(exports.data.name, 'Wiki edit complete.')
       if (err) {
         bot.error(exports.data.name, err)
-        return
       }
     })
   })

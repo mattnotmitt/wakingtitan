@@ -27,11 +27,19 @@ bot.loadCmds = (bot) => {
 bot.loadWatchers = (bot) => {
   const watchers = new Discord.Collection(),
     watcherList = jetpack.list('./watchers/')
+  let watcherData = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
   watcherList.forEach((f) => {
     const props = require(`./watchers/${f}`)
-    bot.log('Loader', chalk.green(`Loading Watcher: ${props.data.name}. 👌`))
-    watchers.set(props.data.command, props)
-    props.watcher(bot)
+    if (typeof watcherData[props.data.command] !== 'object') watcherData[props.data.command] = {enable: true}
+    if (typeof watcherData[props.data.command].enable !== 'boolean') watcherData[props.data.command].enable = true
+    jetpack.write('/home/matt/mattBot/watcherData.json', watcherData)
+    if (watcherData[props.data.command].enable === true) {
+      bot.log('Loader', chalk.green(`Loading Watcher: ${props.data.name}. 👌`))
+      watchers.set(props.data.command, props)
+      props.watcher(bot)
+    } else {
+      bot.log('Loader', chalk.green(`Skipped loading ${props.data.name} as it is disabled. ❌`))
+    }
   })
   return watchers
 }
@@ -107,13 +115,29 @@ bot.disable = function (command) {
   })
 }
 
-bot.watcherReload = function (watcher) {
+bot.watcherEnable = function (watcher, watcherData) {
   return new Promise((resolve, reject) => {
     try {
-      delete require.cache[require.resolve(`./watchers/${watcher}.js`)]
       const watchProps = require(`./watchers/${watcher}.js`)
-      bot.commands.delete(watcher)
-      bot.commands.set(watcher, watchProps)
+      bot.watchers.set(watcher, watchProps)
+      bot.watchers.get(watcher).watcher(bot)
+      watcherData[watcher].enable = true
+      jetpack.write('/home/matt/mattBot/watcherData.json', watcherData)
+      resolve()
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
+bot.watcherDisable = function (watcher, watcherData) {
+  return new Promise((resolve, reject) => {
+    try {
+      bot.watchers.get(watcher).disable()
+      watcherData[watcher].enable = false
+      jetpack.write('/home/matt/mattBot/watcherData.json', watcherData)
+      delete require.cache[require.resolve(`./watchers/${watcher}.js`)]
+      bot.watchers.delete(watcher)
       resolve()
     } catch (e) {
       reject(e)

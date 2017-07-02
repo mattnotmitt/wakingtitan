@@ -103,3 +103,7 @@ const getFollowList = (watch, bot) => {
   }
   return follow.slice(0, -2)
 }
+
+exports.disable = () => {
+  botStream.stop()
+}
