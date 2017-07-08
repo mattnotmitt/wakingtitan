@@ -12,7 +12,8 @@ const _ = require('lodash'),
   request = require('request-promise-native'),
   strftime = require('strftime'),
   Twit = require('twit'),
-  Wikibot = require('nodemw')
+  Wikibot = require('nodemw'),
+  exec = require('child-process-promise').exec
 
 // Initialisation of wiki bot
 const OcelBot = new Wikibot({
@@ -75,7 +76,7 @@ const checkStations = async(bot) => {
         title: title,
         url: announced[city].stationLink,
         footer: {
-          icon_url: 'https://images-ext-2.discordapp.net/.eJwNyUESgjAMBdC79ACE1oANt_ltquLokGkLG8e7w9u-n9vrxy3u1bu1hUjXlreqMBvy9iXYSnsrtVEY4xz9KHf2HG9zCEw40HGVFpXkS0acRDwjaUrA9NAsBZJ4eNvT_U884SIV.jYUxIKTv0vvIHXqN6LySx60xsGk?width=80&height=80',
+          icon_url: 'http://i.imgur.com/FYk8lDP.jpg',
           text: 'MattBot'
         },
         author: {
@@ -140,7 +141,7 @@ const checkGlyphs = (bot) => {
           timestamp: moment().toISOString(),
           description: 'That\'s good, innit!',
           footer: {
-            icon_url: 'https://images-ext-2.discordapp.net/.eJwNyUESgjAMBdC79ACE1oANt_ltquLokGkLG8e7w9u-n9vrxy3u1bu1hUjXlreqMBvy9iXYSnsrtVEY4xz9KHf2HG9zCEw40HGVFpXkS0acRDwjaUrA9NAsBZJ4eNvT_U884SIV.jYUxIKTv0vvIHXqN6LySx60xsGk?width=80&height=80',
+            icon_url: 'http://i.imgur.com/FYk8lDP.jpg',
             text: 'MattBot'
           },
           author: {
@@ -185,11 +186,15 @@ const checkGlyphs = (bot) => {
 // Checks for updates on echo-64.com
 const checkSites = async(bot) => {
   const data = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
-  for (let site of data.wakingTitan.sites) {
-    request(site).then(async body => {
+  for (let site in data.wakingTitan.sites) {
+    let cookJar = request.jar()
+    if (site === 'https://wakingtitan.com/w-767') {
+      cookJar.setCookie(request.cookie('authorization=da0defec-21bd-41d9-b05b-310c00c71920'), site)
+    }
+    request({url: site, jar: cookJar}).then(async body => {
       // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
-      const pageCont = body.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>/ig, ''),
-        oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-latest.html`)
+      const pageCont = body.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"/ig, ''),
+        oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`)
       if (pageCont !== oldCont) {
         bot.log(exports.data.name, `There's been a change on ${site}`)
         if (!hasUpdate[site]) {
@@ -197,32 +202,44 @@ const checkSites = async(bot) => {
             color: 0x993E4D,
             timestamp: moment().toISOString(),
             author: {
-              name: `${site.split('/')[2]} has updated`,
+              name: `${site.split('/').splice(2).join('/')} has updated`,
               url: site,
               icon_url: 'http://i.imgur.com/PFQODUN.png'
             },
             footer: {
-              icon_url: 'https://images-ext-2.discordapp.net/.eJwNyUESgjAMBdC79ACE1oANt_ltquLokGkLG8e7w9u-n9vrxy3u1bu1hUjXlreqMBvy9iXYSnsrtVEY4xz9KHf2HG9zCEw40HGVFpXkS0acRDwjaUrA9NAsBZJ4eNvT_U884SIV.jYUxIKTv0vvIHXqN6LySx60xsGk?width=80&height=80',
+              icon_url: 'http://i.imgur.com/FYk8lDP.jpg',
               text: 'MattBot'
-            },
-            description: 'I am but a stupid bot, so I can\'t tell you what changed.'
+            }
           })
-          /*
-          if (site === 'http://superlumina-6c.com' && /<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.test(pageCont)) {
-            embed.setDescription(`**Percentages have changed.**\n${/<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.exec(pageCont).slice(1, 6).join('\n')}`)
-          } else {
-            T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
-          } */
-          T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
-          for (let channel of data.wakingTitan.channels) {
-            bot.channels.get(channel).send('', {
-              embed: embed
-            })
-          }
-          await request(`https://web.archive.org/save/${site}`)
-          jetpack.write(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-latest.html`, pageCont)
-          jetpack.write(`/home/matt/mattBot/watcherData/${site.split('/')[2].split('-')[0]}-logs/${strftime('%F - %H-%M-%S')}.html`, pageCont)
-          hasUpdate[site] = true
+          jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`, pageCont)
+          exec(`diffchecker /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`).then(async res => {
+            let status
+            if (res.stderr.length > 0) {
+              bot.error(`Could not generate diff: ${res.stderr.slice(0, -1)}`)
+              embed.setDescription('The diff could not be generated.')
+              status = `${site} has updated! #WakingTitan`
+            } else {
+              embed.setDescription(`View the change [here](${res.stdout.split(' ').pop().slice(0, -1)}).`)
+              status = `${site} has updated! See what's changed here: ${res.stdout.split(' ').pop().slice(0, -1)}} #WakingTitan`
+            }
+            /*
+            if (site === 'http://superlumina-6c.com' && /<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.test(pageCont)) {
+              embed.setDescription(`**Percentages have changed.**\n${/<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.exec(pageCont).slice(1, 6).join('\n')}`)
+            } else {
+              T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
+            } */
+            T.post('statuses/update', {status: status}).catch(err => bot.error(exports.data.name, err))
+            for (let channel of data.wakingTitan.channels) {
+              bot.channels.get(channel).send('', {
+                embed: embed
+              })
+            }
+            await request(`https://web.archive.org/save/${site}`)
+            jetpack.remove(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`)
+            jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`, pageCont)
+            jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-logs/${strftime('%F - %H-%M-%S')}.html`, pageCont)
+            hasUpdate[site] = true
+          })
         }
       } else {
         hasUpdate[site] = false

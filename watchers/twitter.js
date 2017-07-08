@@ -34,9 +34,9 @@ exports.start = async (msg, bot, args) => {
     }
     let conf = await jetpack.read('/home/matt/mattBot/watcherData.json', 'json'),
       channels = {}
-    if (conf.twitter[userId]) channels = conf.twitter[userId].channels
+    if (conf.twitter[userId]) channels = conf.twitter.watch[userId].channels
     channels[msg.channel.id] = JSON.parse(args[1])
-    conf.twitter[userId] = {name: name, channels: channels}
+    conf.twitter.watch[userId] = {name: name, channels: channels}
     await jetpack.write('/home/matt/mattBot/watcherData.json', conf)
     await msg.reply(`I am now watching ${name} in this channel.`)
     this.watcher(bot)
@@ -48,16 +48,19 @@ exports.start = async (msg, bot, args) => {
 
 // Watches the specified twitter accounts
 exports.watcher = async (bot) => {
-  const watch = (jetpack.read('/home/matt/mattBot/watcherData.json', 'json')).twitter
+  const watch = (jetpack.read('/home/matt/mattBot/watcherData.json', 'json')).twitter.watch
   try {
     botStream.stop()
     // log("oh good")
   } catch (e) {
     // console.error(e)
   }
-  // console.log(getFollowList(watch))
+  // console.log(getFollowList(watch, bot))
   botStream = T.stream('statuses/filter', {
     follow: getFollowList(watch, bot)
+  })
+  botStream.on('connected', response => {
+    bot.log(exports.data.name, 'Connected to Twitter stream API.')
   })
   // console.log(botStream)
   botStream.on('tweet', (tweet) => {
@@ -73,7 +76,7 @@ exports.watcher = async (bot) => {
       timestamp: (new Date(tweet.created_at)).toISOString(),
       footer: {
         text: `|`,
-        icon_url: 'https://artemisbot.co.uk/i/nb7ko.png'
+        icon_url: 'https://artemisbot.uk/i/nb7ko.png'
       }
     })
     // log(tweet.user.id_str)

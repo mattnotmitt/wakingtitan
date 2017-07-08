@@ -5,6 +5,7 @@
   "main": "main.js",
   "dependencies": {
     "chalk": "^1.1.3",
+    "child-process-promise": "^2.2.1",
     "css-select": "^1.3.0-rc0",
     "discord.js": "^11.1.0",
     "fs-jetpack": "^0.10.5",
@@ -37,7 +38,7 @@
     "selfbot"
   ],
   "author": "Matt C [matt@artemisbot.uk]",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/artemisbot/wakingtitan/issues"
   },
