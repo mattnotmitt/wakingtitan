@@ -20,7 +20,7 @@ exports.func = async (msg, args, bot) => {
     msg.channel.stopTyping()
     msg.channel.send('', {embed: {
       title: `> ${args.join(' ').toUpperCase()}`,
-      description: `**${resp.data.message.join('\n').toUpperCase()}**`,
+      description: `**${resp.data.message.join('\n')}**`,
       color: resp.success ? 0x00fc5d : 0xf00404,
       footer: {
         icon_url: 'http://i.imgur.com/FYk8lDP.jpg',

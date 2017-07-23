@@ -55,7 +55,7 @@ const checkStatus = async (bot) => {
   try {
     let resp = await wterminal('status'),
       data = jetpack.read('watcherData.json', 'json'),
-      statMsg = resp.data.message.join('\n').toUpperCase()
+      statMsg = resp.data.message.join('\n')
     if (statMsg !== data.wtStatus.status) {
       let embed = new Discord.RichEmbed({
         author: {
@@ -77,7 +77,7 @@ const checkStatus = async (bot) => {
           embed: embed
         }).then(m => m.pin())
       }
-      data.wtStatus.status = resp.data.message.join('\n').toUpperCase()
+      data.wtStatus.status = statMsg
       jetpack.write('watcherData.json', data)
     }
   } catch (e) {
