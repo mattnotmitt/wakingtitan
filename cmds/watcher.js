@@ -27,7 +27,7 @@ exports.func = async (msg, args, bot) => {
         msg.reply('Selected watcher does not exist.')
       }
     } else if (args[0] === 'enable') {
-      if (bot.watchers.has(args[1]) || ['wakingTitan', 'countdown', 'twitter'].indexOf(args[1]) >= 0) {
+      if (bot.watchers.has(args[1]) || ['wakingTitan', 'countdown', 'twitter', 'wtStatus'].indexOf(args[1]) >= 0) {
         if (!watcherData[args[1]].enable) {
           bot.watcherEnable(args[1], watcherData)
           msg.reply('Enable successful.')

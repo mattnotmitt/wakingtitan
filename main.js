@@ -7,6 +7,7 @@ const Discord = require('discord.js'),
 const bot = new Discord.Client()
 bot.permitChan = config.activeChannels
 bot.error = (source, msg) => {
+  bot.channels.get('338712920466915329').send(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] - | ${source} | - ${msg}`)
   bot.log(source, chalk.bold.red(msg))
 }
 bot.log = (source, msg) => {
@@ -59,11 +60,13 @@ bot.on('message', (msg) => {
   if (bot.commands.has(command)) {
     cmd = bot.commands.get(command)
   }
+  // console.log(bot.elevation(msg))
   if (cmd && (cmd.data.anywhere || bot.elevation(msg) >= 3 || bot.permitChan.indexOf(msg.channel.id) >= 0)) {
+    // console.log('passed test')
     if (bot.elevation(msg) >= cmd.data.permissions) {
       cmd.func(msg, args, bot)
     } else {
-      msg.reply(':newspaper2: You don\'t have permission to use this command.')
+      bot.delReply(msg, ':newspaper2: You don\'t have permission to use this command.')
     }
   }
 })

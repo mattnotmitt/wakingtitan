@@ -47,7 +47,7 @@ exports.watcher = async(bot) => {
   this.disable()
   bot.log(exports.data.name, 'Waking Titan has initialised successfully.')
   repeat = setInterval(async() => {
-    checkStations(bot)
+    // checkStations(bot)
     checkGlyphs(bot)
     checkSites(bot)
   }, 0.5 * 60 * 1000) // Repeat every 30 seconds
@@ -156,7 +156,7 @@ const checkGlyphs = (bot) => {
         for (let channel of data.wakingTitan.channels) {
           await bot.channels.get(channel).send('', {
             embed: embed
-          })
+          }).then(m => m.pin())
         }
         request({
           url: `http://wakingtitan.com${glyphs.sort()[i]}`,
@@ -186,6 +186,7 @@ const checkGlyphs = (bot) => {
 // Checks for updates on echo-64.com
 const checkSites = async(bot) => {
   const data = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
+  // console.log(data.wakingTitan.sites)
   for (let site in data.wakingTitan.sites) {
     let cookJar = request.jar()
     if (site === 'https://wakingtitan.com') {
@@ -193,63 +194,65 @@ const checkSites = async(bot) => {
     }
     request({url: site, jar: cookJar}).then(async body => {
       // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
-      const pageCont = body.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"/ig, '').replace(/>[\s]+</g, '><'),
+      const pageCont = clean(body),
         oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`)
       if (pageCont !== oldCont) {
         bot.log(exports.data.name, `There's been a change on ${site}`)
-        request({url: site, jar: cookJar}).then(async body2 => {
-          // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
-          const pageCont2 = body.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"/ig, '').replace(/>[\s]+</g, '><')
-          if (pageCont2 === pageCont) {
-            if (!hasUpdate[site]) {
-              let embed = new Discord.RichEmbed({
-                color: 0x993E4D,
-                timestamp: moment().toISOString(),
-                author: {
-                  name: `${site.split('/').splice(2).join('/')} has updated`,
-                  url: site,
-                  icon_url: 'http://i.imgur.com/PFQODUN.png'
-                },
-                footer: {
-                  icon_url: 'http://i.imgur.com/FYk8lDP.jpg',
-                  text: 'MattBot'
-                }
-              })
-              jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`, pageCont)
-              exec(`diffchecker /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`).then(async res => {
-                let status
-                if (res.stderr.length > 0) {
-                  bot.error(`Could not generate diff: ${res.stderr.slice(0, -1)}`)
-                  embed.setDescription('The diff could not be generated.')
-                  status = `${site} has updated! #WakingTitan`
-                } else {
-                  embed.setDescription(`View the change [here](${res.stdout.split(' ').pop().slice(0, -1)}).`)
-                  status = `${site} has updated! See what's changed here: ${res.stdout.split(' ').pop().slice(0, -1)} #WakingTitan`
-                }
-                /*
-                if (site === 'http://superlumina-6c.com' && /<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.test(pageCont)) {
-                  embed.setDescription(`**Percentages have changed.**\n${/<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.exec(pageCont).slice(1, 6).join('\n')}`)
-                } else {
-                  T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
-                } */
-                T.post('statuses/update', {status: status}).catch(err => bot.error(exports.data.name, err))
-                for (let channel of data.wakingTitan.channels) {
-                  bot.channels.get(channel).send('', {
-                    embed: embed
-                  })
-                }
-                await request(`https://web.archive.org/save/${site}`)
-                jetpack.remove(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`)
-                jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`, pageCont)
-                jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-logs/${strftime('%F - %H-%M-%S')}.html`, pageCont)
-                hasUpdate[site] = true
-              })
+        setTimeout(() => {
+          request({url: site, jar: cookJar}).then(async body2 => {
+            // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
+            const pageCont2 = clean(body)
+            if (pageCont2 === pageCont) {
+              if (!hasUpdate[site]) {
+                let embed = new Discord.RichEmbed({
+                  color: 0x993E4D,
+                  timestamp: moment().toISOString(),
+                  author: {
+                    name: `${site.split('/').splice(2).join('/')} has updated`,
+                    url: site,
+                    icon_url: 'http://i.imgur.com/PFQODUN.png'
+                  },
+                  footer: {
+                    icon_url: 'http://i.imgur.com/FYk8lDP.jpg',
+                    text: 'MattBot'
+                  }
+                })
+                jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`, pageCont)
+                exec(`diffchecker /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html /home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`).then(async res => {
+                  let status
+                  if (res.stderr.length > 0) {
+                    bot.error(`Could not generate diff: ${res.stderr.slice(0, -1)}`)
+                    embed.setDescription('The diff could not be generated.')
+                    status = `${site} has updated! #WakingTitan`
+                  } else {
+                    embed.setDescription(`View the change [here](${res.stdout.split(' ').pop().slice(0, -1)}).`)
+                    status = `${site} has updated! See what's changed here: ${res.stdout.split(' ').pop().slice(0, -1)} #WakingTitan`
+                  }
+                  /*
+                  if (site === 'http://superlumina-6c.com' && /<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.test(pageCont)) {
+                    embed.setDescription(`**Percentages have changed.**\n${/<p>(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<br\/>\n(.+)<\/p>/g.exec(pageCont).slice(1, 6).join('\n')}`)
+                  } else {
+                    T.post('statuses/update', {status: `${site} has updated! #WakingTitan`}).catch(err => bot.error(exports.data.name, err))
+                  } */
+                  T.post('statuses/update', {status: status}).catch(err => bot.error(exports.data.name, err))
+                  for (let channel of data.wakingTitan.channels) {
+                    bot.channels.get(channel).send('', {
+                      embed: embed
+                    })
+                  }
+                  await request(`https://web.archive.org/save/${site}`)
+                  jetpack.remove(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-temp.html`)
+                  jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`, pageCont)
+                  jetpack.write(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-logs/${strftime('%F - %H-%M-%S')}.html`, pageCont)
+                  hasUpdate[site] = true
+                })
+              }
+            } else {
+              bot.log(exports.data.name, 'Update was only temporary. Rejected broadcast protocol.')
+              hasUpdate[site] = true
             }
-          } else {
-            bot.log(exports.data.name, 'Update was only temporary. Rejected broadcast protocol.')
-            hasUpdate[site] = true
-          }
-        })
+          }).catch(err => bot.error(exports.data.name, err))
+        }, 5000)
       } else {
         hasUpdate[site] = false
       }
@@ -356,4 +359,8 @@ ${table}|}
     })
   })
   return table
+}
+
+const clean = (str) => {
+  return str.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"|<!--[\s\S]*?-->/ig, '').replace(/>[\s]+</g, '><').replace(/"\s+\//g, '"/')
 }
