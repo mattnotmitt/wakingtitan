@@ -18,7 +18,7 @@ exports.watcher = async bot => {
   postCities(bot)
   repeat = setInterval(() => {
     postCities(bot)
-  }, 5 * 60 * 1000)
+  }, 0.5 * 60 * 1000)
 }
 
 exports.start = (msg, bot, args) => {
@@ -57,16 +57,16 @@ const postCities = async (bot) => {
     let cities = await getCities(bot),
       data = jetpack.read('watcherData.json', 'json'),
       liveMsg = ''
-    Object.keys(cities).forEach(city => {
+    Object.keys(cities).sort().forEach(city => {
       liveMsg += `${city}: ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
     })
     let liveEmbed = new Discord.RichEmbed({
       author: {
-        name: 'Live updating list of cities from project-wt.com.',
+        name: 'Live updating list of locations from project-wt.com.',
         icon_url: 'http://i.imgur.com/Xm6m0fr.png',
         url: 'http://project-wt.com'
       },
-      description: `**${Object.keys(cities).length} Cities**\n${liveMsg.slice(0, -3)}`,
+      description: `**${Object.keys(cities).length} Locations**\n${liveMsg.slice(0, -3)}`,
       color: 0x993E4D,
       footer: {
         text: 'Updated on'
@@ -74,22 +74,26 @@ const postCities = async (bot) => {
       timestamp: moment().toISOString()
     })
     for (let channel in data.pwtCities.channels) {
+      console.log(await bot.channels.get(channel).name);
       (await bot.channels.get(channel).fetchMessage(data.pwtCities.channels[channel])).edit('', {
         embed: liveEmbed
       })
     }
     if (!_.isEqual(cities, lastCities)) {
+      // console.log(lastCities)
       let updateMsg = ''
-      Object.keys(cities).forEach(city => {
-        if (!lastCities[city]) {
+      Object.keys(cities).sort().forEach(city => {
+        if (typeof lastCities[city] === 'undefined') {
+          // console.log(city)
           updateMsg += `${city}: New -> ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
         } else if (cities[city] !== lastCities[city]) {
+          // console.log(city)
           updateMsg += `${city}: ${typeof lastCities[city] === 'boolean' ? '☑️' : `${lastCities[city]}%`} -> ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
         }
       })
       let updateEmbed = new Discord.RichEmbed({
         author: {
-          name: 'Update to city list on project-wt.com',
+          name: 'Update to location list on project-wt.com',
           icon_url: 'http://i.imgur.com/Xm6m0fr.png',
           url: 'http://project-wt.com'
         },
@@ -120,6 +124,7 @@ const getCities = () => {
       cityRaw.forEach(city => {
         cities[city.name] = city.isReady ? city.isReady : city.progression
       })
+      // console.log(cities)
       resolve(cities)
     } catch (e) {
       reject(e)
