@@ -5,7 +5,7 @@ exports.data = {
   description: 'Lists available commands.',
   group: 'system',
   command: 'help',
-  syntax: 'matt help [optional:command]',
+  syntax: 'wt help [optional:command]',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 0,
   anywhere: false

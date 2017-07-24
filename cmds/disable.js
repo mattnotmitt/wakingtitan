@@ -3,7 +3,7 @@ exports.data = {
   command: 'disable',
   description: 'Disables a command.',
   group: 'system',
-  syntax: 'matt disable [command]',
+  syntax: 'wt disable [command]',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 4,
   anywhere: false

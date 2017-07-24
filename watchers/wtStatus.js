@@ -1,4 +1,4 @@
-const wterminal = require('../cmds/wterminal.js').runCommand,
+const wterminal = require('../cmds/terminal.js').runCommand,
   jetpack = require('fs-jetpack'),
   Discord = require('discord.js'),
   moment = require('moment'),

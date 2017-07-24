@@ -2,7 +2,7 @@ exports.data = {
   name: 'Enable Command',
   command: 'enable',
   description: 'Enables a new/disabled command.',
-  syntax: 'matt enable [command]',
+  syntax: 'wt enable [command]',
   group: 'system',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 4,

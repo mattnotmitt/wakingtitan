@@ -3,20 +3,36 @@ const request = require('request-promise-native'),
 
 exports.data = {
   name: 'Waking Titan Terminal Commands',
-  command: 'wterminal',
+  command: 'terminal',
   description: 'Checks value of a Waking Titan terminal commmand.',
   group: 'WakingTitan',
-  syntax: 'matt wterminal [command]',
+  syntax: 'wt wterminal [command]',
   author: 'Matt C: matt@artemisbot.uk',
-  permissions: 3
+  permissions: 0
 }
+
+let cache = {}
 
 exports.func = async (msg, args, bot) => {
   try {
+    let resp
     if (args.length === 0) return msg.reply('You must provide at least 1 command for the bot to run.')
     bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has sent ${args.join(' ')} to Waking Titan in #${msg.channel.name}.`)
     msg.channel.startTyping()
-    let resp = await this.runCommand(args[0], args.slice(1))
+    if (cache[args.join(' ')]) {
+      if (moment().diff(moment.unix(cache[args.join]), 'minutes') >= 5) {
+        // bot.log(exports.data.name, 'Cached for too long, requesting.')
+        resp = await this.runCommand(args[0], args.slice(1))
+        cache[args.join(' ')] = {resp: resp, last: moment().unix()}
+      } else {
+        // bot.log(exports.data.name, 'Not cached for long enough')
+        resp = cache[args.join(' ')].resp
+      }
+    } else {
+      // bot.log(exports.data.name, 'Not cached before - requesting.')
+      resp = await this.runCommand(args[0], args.slice(1))
+      cache[args.join(' ')] = {resp: resp, last: moment().unix()}
+    }
     msg.channel.stopTyping()
     msg.channel.send('', {embed: {
       title: `> ${args.join(' ').toUpperCase()}`,

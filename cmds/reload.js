@@ -3,7 +3,7 @@ exports.data = {
   command: 'reload',
   description: 'Reloads a command.',
   group: 'system',
-  syntax: 'matt reload [command]',
+  syntax: 'wt reload [command]',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 4,
   anywhere: true

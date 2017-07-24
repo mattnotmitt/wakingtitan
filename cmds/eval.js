@@ -3,7 +3,7 @@ exports.data = {
   command: 'eval',
   description: 'Sends an eval',
   group: 'system',
-  syntax: 'matt eval [script]',
+  syntax: 'wt eval [script]',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 4,
   anywhere: false
