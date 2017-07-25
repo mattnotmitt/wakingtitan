@@ -45,11 +45,10 @@ bot.loadWatchers = (bot) => {
   return watchers
 }
 
-bot.commands = bot.loadCmds(bot)
-bot.watchers = bot.loadWatchers(bot)
-
 bot.on('ready', () => {
   bot.log('Loader', `Connected to Discord gateway & ${bot.guilds.size} guilds.`)
+  bot.commands = bot.loadCmds(bot)
+  bot.watchers = bot.loadWatchers(bot)
 })
 
 bot.on('message', (msg) => {

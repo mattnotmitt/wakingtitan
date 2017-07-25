@@ -20,7 +20,7 @@ exports.func = async (msg, args, bot) => {
     bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has sent ${args.join(' ')} to Waking Titan in #${msg.channel.name}.`)
     msg.channel.startTyping()
     if (cache[args.join(' ')]) {
-      if (moment().diff(moment.unix(cache[args.join]), 'minutes') >= 5) {
+      if (moment().diff(moment.unix(cache[args.join(' ')].last), 'minutes') >= 5) {
         // bot.log(exports.data.name, 'Cached for too long, requesting.')
         resp = await this.runCommand(args[0], args.slice(1))
         cache[args.join(' ')] = {resp: resp, last: moment().unix()}
@@ -33,7 +33,7 @@ exports.func = async (msg, args, bot) => {
       resp = await this.runCommand(args[0], args.slice(1))
       cache[args.join(' ')] = {resp: resp, last: moment().unix()}
     }
-    msg.channel.stopTyping()
+    msg.channel.stopTyping(true)
     msg.channel.send('', {embed: {
       title: `> ${args.join(' ').toUpperCase()}`,
       description: `**${resp.data.message.join('\n')}**`,
@@ -48,6 +48,7 @@ exports.func = async (msg, args, bot) => {
   } catch (e) {
     bot.error(exports.data.name, `Something went wrong: ${e}`)
     msg.reply('Something\'s gone wrong. <@132479572569620480> check the logs mate.')
+    msg.channel.stopTyping(true)
   }
 }
 

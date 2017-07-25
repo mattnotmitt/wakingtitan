@@ -74,7 +74,7 @@ const postCities = async (bot) => {
       timestamp: moment().toISOString()
     })
     for (let channel in data.pwtCities.channels) {
-      console.log(await bot.channels.get(channel).name);
+      // console.log(await bot.channels.get(channel).name);
       (await bot.channels.get(channel).fetchMessage(data.pwtCities.channels[channel])).edit('', {
         embed: liveEmbed
       })
