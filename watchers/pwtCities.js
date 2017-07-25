@@ -2,7 +2,11 @@ const request = require('request-promise-native'),
   jetpack = require('fs-jetpack'),
   Discord = require('discord.js'),
   moment = require('moment'),
-  _ = require('lodash')
+  _ = require('lodash'),
+  humanizeDuration = require('humanize-duration').humanizer({
+    units: ['y', 'mo', 'w', 'd', 'h', 'm'],
+    round: true
+  })
 
 let repeat,
   lastCities
@@ -18,7 +22,7 @@ exports.watcher = async bot => {
   postCities(bot)
   repeat = setInterval(() => {
     postCities(bot)
-  }, 0.5 * 60 * 1000)
+  }, 2 * 60 * 1000)
 }
 
 exports.start = (msg, bot, args) => {
@@ -56,29 +60,8 @@ const postCities = async (bot) => {
   try {
     let cities = await getCities(bot),
       data = jetpack.read('watcherData.json', 'json'),
-      liveMsg = ''
-    Object.keys(cities).sort().forEach(city => {
-      liveMsg += `${city}: ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
-    })
-    let liveEmbed = new Discord.RichEmbed({
-      author: {
-        name: 'Live updating list of locations from project-wt.com.',
-        icon_url: 'http://i.imgur.com/Xm6m0fr.png',
-        url: 'http://project-wt.com'
-      },
-      description: `**${Object.keys(cities).length} Locations**\n${liveMsg.slice(0, -3)}`,
-      color: 0x993E4D,
-      footer: {
-        text: 'Updated on'
-      },
-      timestamp: moment().toISOString()
-    })
-    for (let channel in data.pwtCities.channels) {
-      // console.log(await bot.channels.get(channel).name);
-      (await bot.channels.get(channel).fetchMessage(data.pwtCities.channels[channel])).edit('', {
-        embed: liveEmbed
-      })
-    }
+      liveMsg = '',
+      compCount = 0
     if (!_.isEqual(cities, lastCities)) {
       // console.log(lastCities)
       let updateMsg = ''
@@ -104,6 +87,8 @@ const postCities = async (bot) => {
         },
         timestamp: moment().toISOString()
       })
+      data.pwtCities.lastChange = moment().unix()
+      jetpack.write('/home/matt/mattBot/watcherData.json', data)
       for (let channel in data.pwtCities.channels) {
         await bot.channels.get(channel).send('', {
           embed: updateEmbed
@@ -111,6 +96,29 @@ const postCities = async (bot) => {
       }
     }
     lastCities = cities
+    Object.keys(cities).sort().forEach(city => {
+      if (typeof cities[city] === 'boolean') compCount++
+      liveMsg += `${city}: ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
+    })
+    let liveEmbed = new Discord.RichEmbed({
+      author: {
+        name: 'Live updating list of locations from project-wt.com.',
+        icon_url: 'http://i.imgur.com/Xm6m0fr.png',
+        url: 'http://project-wt.com'
+      },
+      description: `**${Object.keys(cities).length} Locations**\n**${compCount} Complete**\n${liveMsg.slice(0, -3)}`,
+      color: 0x993E4D,
+      footer: {
+        text: `Last change ${humanizeDuration(moment().diff(moment.unix(data.pwtCities.lastChange)))} ago | Last checked on`
+      },
+      timestamp: moment().toISOString()
+    })
+    for (let channel in data.pwtCities.channels) {
+      // console.log(await bot.channels.get(channel).name);
+      (await bot.channels.get(channel).fetchMessage(data.pwtCities.channels[channel])).edit('', {
+        embed: liveEmbed
+      })
+    }
   } catch (e) {
     bot.error(exports.data.name, `Something went wrong: ${e}`)
   }

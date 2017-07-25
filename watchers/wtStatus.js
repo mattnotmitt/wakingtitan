@@ -18,7 +18,7 @@ exports.watcher = (bot) => {
   this.disable()
   repeat = setInterval(async() => {
     checkStatus(bot)
-  }, 0.5 * 60 * 1000)
+  }, 2 * 60 * 1000)
   bot.log(exports.data.name, `${exports.data.name} has initialised successfully.`)
 }
 
@@ -75,7 +75,7 @@ const checkStatus = async (bot) => {
       for (let channel of data.wtStatus.channels) {
         await bot.channels.get(channel).send('', {
           embed: embed
-        }).then(m => m.pin())
+        })
       }
       data.wtStatus.status = statMsg
       jetpack.write('watcherData.json', data)

@@ -156,7 +156,7 @@ const checkGlyphs = (bot) => {
         for (let channel of data.wakingTitan.channels) {
           await bot.channels.get(channel).send('', {
             embed: embed
-          }).then(m => m.pin())
+          })
         }
         request({
           url: `http://wakingtitan.com${glyphs.sort()[i]}`,
