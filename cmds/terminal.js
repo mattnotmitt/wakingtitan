@@ -6,7 +6,7 @@ exports.data = {
   command: 'terminal',
   description: 'Checks value of a Waking Titan terminal commmand.',
   group: 'WakingTitan',
-  syntax: 'wt wterminal [command]',
+  syntax: 'wt terminal [command]',
   author: 'Matt C: matt@artemisbot.uk',
   permissions: 0
 }
@@ -54,10 +54,11 @@ exports.func = async (msg, args, bot) => {
 
 exports.runCommand = (command, params) => {
   return new Promise(async (resolve, reject) => {
+    params = params.length >= 0 ? params : []
     try {
       let cookJar = request.jar()
       cookJar.setCookie(request.cookie('terminal=%5B%22atlas%22%2C%22csd%22%2C%222fee0b5b-6312-492a-8308-e7eec4287495%22%2C%2205190fed-b606-4321-a52e-c1d1b39f2861%22%2C%22f7c05c4f-18a5-47a7-bd8e-804347a15f42%22%5D'), 'http://wakingtitan.com')
-      resolve(await request.post({url: 'http://wakingtitan.com/terminal', json: true, jar: cookJar, form: {command: command, 'param[]': params}, qsStringifyOptions: {arrayFormat: 'repeat'}}))
+      resolve(await request.post({url: 'http://wakingtitan.com/terminal', json: true, jar: cookJar, form: {command: command.toLowerCase(), 'param[]': params.map(param => param.toLowerCase())}, qsStringifyOptions: {arrayFormat: 'repeat'}}))
     } catch (e) {
       reject(e)
     }

@@ -196,7 +196,7 @@ const checkSites = async(bot) => {
       // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
       const pageCont = clean(body),
         oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`)
-      if (pageCont !== oldCont) {
+      if (pageCont.replace(/( )/g, '').replace(/(\n)/g, '') !== oldCont.replace(/( )/g, '').replace(/(\n)/g, '')) {
         bot.log(exports.data.name, `There's been a change on ${site}`)
         setTimeout(() => {
           request({url: site, jar: cookJar}).then(async body2 => {
