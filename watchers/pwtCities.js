@@ -60,7 +60,7 @@ const postCities = async (bot) => {
   try {
     let cities = await getCities(bot),
       data = jetpack.read('watcherData.json', 'json'),
-      liveMsg = '',
+      // liveMsg = '',
       compCount = 0
     if (!_.isEqual(cities, lastCities)) {
       // console.log(lastCities)
@@ -87,7 +87,8 @@ const postCities = async (bot) => {
         },
         timestamp: moment().toISOString()
       })
-      data.pwtCities.lastChange = moment().unix()
+      data.pwtCities.lastChangeTime = moment().unix()
+      data.pwtCities.lastChangeText = updateMsg.slice(0, -3)
       jetpack.write('/home/matt/mattBot/watcherData.json', data)
       for (let channel in data.pwtCities.channels) {
         await bot.channels.get(channel).send('', {
@@ -98,18 +99,19 @@ const postCities = async (bot) => {
     lastCities = cities
     Object.keys(cities).sort().forEach(city => {
       if (typeof cities[city] === 'boolean') compCount++
-      liveMsg += `${city}: ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
+      // liveMsg += `${city}: ${typeof cities[city] === 'boolean' ? '☑️' : `${cities[city]}%`} | `
     })
     let liveEmbed = new Discord.RichEmbed({
       author: {
-        name: 'Live updating list of locations from project-wt.com.',
+        name: 'Live updating data on locations from project-wt.com.',
         icon_url: 'http://i.imgur.com/Xm6m0fr.png',
         url: 'http://project-wt.com'
       },
-      description: `**${Object.keys(cities).length} Locations**\n**${compCount} Complete**\n${liveMsg.slice(0, -3)}`,
+    //  description: `**${Object.keys(cities).length} Locations**\n**${compCount} Complete**\n${liveMsg.slice(0, -3)}`,
+      description: `**${Object.keys(cities).length} Locations\n${compCount} Complete\nLast change ${humanizeDuration(moment().diff(moment.unix(data.pwtCities.lastChangeTime)))} ago:**\n${data.pwtCities.lastChangeText}\n\nView a live updating list of locations [here](http://wytchmourne.com/pwt/).`,
       color: 0x993E4D,
       footer: {
-        text: `Last change ${humanizeDuration(moment().diff(moment.unix(data.pwtCities.lastChange)))} ago | Last checked on`
+        text: `Last checked on`
       },
       timestamp: moment().toISOString()
     })

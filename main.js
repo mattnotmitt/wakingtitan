@@ -149,11 +149,11 @@ bot.watcherDisable = function (watcher, watcherData) {
 
 bot.elevation = function (msg) {
   if (msg.author.id === config.ownerID) return 4
-  if (msg.guild.id !== '129022124844253184') return 0
+  if (['129022124844253184', '146101654981312513'].indexOf(msg.guild.id) < 0) return 0
   let adminRole = msg.guild.roles.find('name', 'Admins')
-  let modRole = msg.guild.roles.find('name', 'Moderators')
+  let modRole = msg.guild.roles.find('name', 'Moderators') || msg.guild.roles.find('name', 'Discord Mods')
   if ((adminRole || modRole) && (msg.member.roles.has(modRole.id) || msg.member.roles.has(adminRole.id))) return 3
-  let arcRole = msg.guild.roles.find('name', 'Wiki Editors')
+  let arcRole = msg.guild.roles.find('name', 'Wiki Editors') || msg.guild.roles.find('name', 'ARG Expert') || msg.guild.roles.find('name', 'GD Wiki Editor')
   if (arcRole && msg.member.roles.has(arcRole.id)) return 2
   let detRole = msg.guild.roles.find('name', 'Detective')
   if (detRole && msg.member.roles.has(detRole.id)) return 1
