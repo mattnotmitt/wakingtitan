@@ -1,5 +1,10 @@
 // ================| Initialisation |================
 
+exports.data = {
+  name: 'Waking Titan',
+  command: 'wakingTitan'
+}
+
 // Loads required modules
 const _ = require('lodash'),
   config = require('../config.json'),
@@ -13,6 +18,8 @@ const _ = require('lodash'),
   strftime = require('strftime'),
   Twit = require('twit'),
   Wikibot = require('nodemw'),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk'),
   exec = require('child-process-promise').exec
 
 // Initialisation of wiki bot
@@ -35,17 +42,11 @@ let repeat,
     'http://multiverse-75.com': false,
     'http://superlumina-6c.com': false}
 
-// Data for bot framework
-exports.data = {
-  name: 'Waking Titan',
-  command: 'wakingTitan'
-}
-
 // Starts intervals
 exports.watcher = async(bot) => {
   // In case of restarting this watcher, kill all loops
   this.disable()
-  bot.log(exports.data.name, 'Waking Titan has initialised successfully.')
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
   repeat = setInterval(async() => {
     // checkStations(bot)
     checkGlyphs(bot)
@@ -190,7 +191,7 @@ const checkSites = async(bot) => {
   for (let site in data.wakingTitan.sites) {
     let cookJar = request.jar()
     if (site === 'https://wakingtitan.com') {
-      cookJar.setCookie(request.cookie('authorization=da0defec-21bd-41d9-b05b-310c00c71920'), site)
+      cookJar.setCookie(request.cookie('archive=%5B%229b169d05-6b0b-49ea-96f7-957577793bef%22%2C%2267e3b625-39c0-4d4c-9241-e8ec0256b546%22%2C%224e153ce4-0fec-406f-aa90-6ea62e579369%22%2C%227b9bca5c-43ba-4854-b6b7-9fffcf9e2b45%22%2C%222f99ac82-fe56-43ab-baa6-0182fd0ed020%22%2C%22b4631d12-c218-4872-b414-9ac31b6c744e%22%2C%2283a383e2-f4fc-4d8d-905a-920057a562e7%22%5D'), site)
     }
     request({url: site, jar: cookJar}).then(async body => {
       // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')

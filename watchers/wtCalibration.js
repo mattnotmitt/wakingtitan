@@ -1,25 +1,27 @@
+exports.data = {
+  name: 'Waking Titan Terminal Calibration',
+  command: 'wtCalibration'
+}
+
 const wterminal = require('../cmds/terminal.js').runCommand,
   jetpack = require('fs-jetpack'),
   Discord = require('discord.js'),
   moment = require('moment'),
   Twit = require('twit'),
-  config = require('../config.json')
+  config = require('../config.json'),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk')
 
 let repeat
 
 const T = new Twit(config.WTTwitter)
-
-exports.data = {
-  name: 'Waking Titan Terminal Calibration',
-  command: 'wtCalibration'
-}
 
 exports.watcher = (bot) => {
   this.disable()
   repeat = setInterval(async() => {
     checkCalibration(bot)
   }, 2 * 60 * 1000)
-  bot.log(exports.data.name, `${exports.data.name} has initialised successfully.`)
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
 }
 
 exports.start = (msg, bot, args) => {
@@ -27,7 +29,7 @@ exports.start = (msg, bot, args) => {
     index = data.wtCalibration.channels.indexOf(msg.channel.id)
   if (index < 0) {
     data.wtCalibration.channels.push(msg.channel.id)
-    bot.log(exports.data.name, `Now outputting calibration updates to #${msg.channel.name} in ${msg.guild.name}.`)
+    log.info(`Now outputting calibration updates to #${msg.channel.name} in ${msg.guild.name}.`)
     msg.reply('Now outputting calibration updates to this channel.')
     jetpack.write('watcherData.json', data)
   } else {
@@ -40,7 +42,7 @@ exports.stop = (msg, bot, args) => {
     index = data.wtCalibration.channels.indexOf(msg.channel.id)
   if (index >= 0) {
     data.wtCalibration.channels.splice(index, 1)
-    bot.log(exports.data.name, `No longer outputting calibration updates to #${msg.channel.name} in ${msg.guild.name}.`)
+    log.info(`No longer outputting calibration updates to #${msg.channel.name} in ${msg.guild.name}.`)
     jetpack.write('watcherData.json', data)
   } else {
     return msg.reply('This channel is not receiving updates on the calibration command.')
@@ -81,6 +83,6 @@ const checkCalibration = async (bot) => {
       jetpack.write('watcherData.json', data)
     }
   } catch (e) {
-    bot.error(exports.data.name, `Something went wrong: ${e}`)
+    log.error(`Something went wrong: ${e}`)
   }
 }

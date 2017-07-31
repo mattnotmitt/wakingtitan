@@ -1,12 +1,14 @@
-const moment = require('moment'),
-  humanizeDuration = require('humanize-duration'),
-  jetpack = require('fs-jetpack')
-
 exports.data = {
   name: 'Countdowns',
   nick: 'countdown',
   command: 'countdown'
 }
+
+const moment = require('moment'),
+  humanizeDuration = require('humanize-duration'),
+  jetpack = require('fs-jetpack'),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk')
 
 let countdown
 
@@ -50,7 +52,7 @@ exports.disable = () => {
 
 exports.watcher = async (bot) => {
   this.disable()
-  bot.log(exports.data.name, 'Countdowns have initialised successfully.')
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
   countdown = setInterval(async () => {
     const data = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
     if (!data.countdown.data) data.countdown.data = []

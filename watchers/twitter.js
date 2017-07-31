@@ -1,13 +1,3 @@
-const Twit = require('twit'),
-  Discord = require('discord.js'),
-  jetpack = require('fs-jetpack'),
-  he = require('he'),
-  config = require('../config.json')
-
-const T = new Twit(config.twitter)
-
-let botStream
-
 exports.data = {
   name: 'Twitter Watcher',
   nick: 'twitter',
@@ -15,6 +5,18 @@ exports.data = {
   description: 'Creates a watcher for tweets.',
   author: 'Matt C: matt@artemisbot.uk'
 }
+
+const Twit = require('twit'),
+  Discord = require('discord.js'),
+  jetpack = require('fs-jetpack'),
+  he = require('he'),
+  config = require('../config.json'),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk')
+
+const T = new Twit(config.WTTwitter)
+
+let botStream
 
 // Handles adding and removing of followed Twitter accounts
 exports.start = async (msg, bot, args) => {
@@ -30,7 +32,7 @@ exports.start = async (msg, bot, args) => {
         name = (await T.get('users/show', {user_id: args[0]})).data.screen_name
       }
     } catch (err) {
-      bot.error(exports.data.name, `Initialisation of twitter stream failed: ${err}`)
+      log.error(`Initialisation of twitter stream failed: ${err}`)
     }
     let conf = await jetpack.read('/home/matt/mattBot/watcherData.json', 'json'),
       channels = {}
@@ -42,7 +44,7 @@ exports.start = async (msg, bot, args) => {
     this.watcher(bot)
   } catch (err) {
     msg.reply('Couldn\'t watch this user! Check the logs.')
-    bot.error(exports.data.name, `Couldn't start watching a new user: ${err}`)
+    log.error(`Couldn't start watching a new user: ${err}`)
   }
 }
 
@@ -60,7 +62,7 @@ exports.watcher = async (bot) => {
     follow: getFollowList(watch, bot)
   })
   botStream.on('connected', response => {
-    bot.log(exports.data.name, 'Connected to Twitter stream API.')
+    log.verbose('Connected to Twitter stream API.')
   })
   // console.log(botStream)
   botStream.on('tweet', (tweet) => {
@@ -90,16 +92,17 @@ exports.watcher = async (bot) => {
     }
   })
   botStream.on('error', (err) => {
-    bot.error(exports.data.name, `Twitter Stream has exited with error: ${err}`)
+    log.error(`Twitter Stream has exited with error: ${err}`)
     this.watcher(bot)
   })
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
 }
 const getFollowList = (watch, bot) => {
   let follow = ''
   if (Object.keys(watch).length > 0) {
     for (let user in watch) {
       for (let channel in watch[user].channels) {
-        bot.log(exports.data.name, `Channel ${channel} is watching user ${watch[user].name}.`)
+        log.verbose(`Channel ${channel} is watching user ${watch[user].name}.`)
       }
       follow += `${user}, `
     }

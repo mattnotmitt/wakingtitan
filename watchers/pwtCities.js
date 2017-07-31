@@ -1,3 +1,8 @@
+exports.data = {
+  name: 'Project-WT Cities',
+  command: 'pwtCities'
+}
+
 const request = require('request-promise-native'),
   jetpack = require('fs-jetpack'),
   Discord = require('discord.js'),
@@ -6,17 +11,15 @@ const request = require('request-promise-native'),
   humanizeDuration = require('humanize-duration').humanizer({
     units: ['y', 'mo', 'w', 'd', 'h', 'm'],
     round: true
-  })
+  }),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk')
 
 let repeat,
   lastCities
 
-exports.data = {
-  name: 'Project-WT Cities',
-  command: 'pwtCities'
-}
-
 exports.watcher = async bot => {
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
   this.disable()
   lastCities = await getCities(bot)
   postCities(bot)
@@ -129,7 +132,7 @@ const postCities = async (bot) => {
 const getCities = () => {
   return new Promise(async (resolve, reject) => {
     try {
-      let cityRaw = await request({url: 'https://project-wt.com/cities/1', json: true}),
+      let cityRaw = (await request({url: 'https://project-wt.com/cities/1', json: true})).cities,
         cities = {}
       cityRaw.forEach(city => {
         cities[city.name] = city.isReady ? city.isReady : city.progression

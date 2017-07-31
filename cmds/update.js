@@ -19,12 +19,12 @@ exports.func = async (msg, args, bot) => {
     await genImage(args.join(' '), msg.channel.id)
     if (data.update[msg.channel.id]) {
       await (await msg.channel.fetchMessage(data.update[msg.channel.id])).edit('', {embed: {
-        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.random()}`},
+        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.ceil(Math.random())}`},
         color: 0x993E4D
       }})
     } else {
       await msg.channel.send('', {embed: {
-        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.random()}`},
+        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.ceil(Math.random())}`},
         color: 0x993E4D
       }}).then(m => {
         data.update[msg.channel.id] = m.id

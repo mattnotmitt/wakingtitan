@@ -1,25 +1,27 @@
+exports.data = {
+  name: 'Waking Titan Terminal Status',
+  command: 'wtStatus'
+}
+
 const wterminal = require('../cmds/terminal.js').runCommand,
   jetpack = require('fs-jetpack'),
   Discord = require('discord.js'),
   moment = require('moment'),
   Twit = require('twit'),
-  config = require('../config.json')
+  config = require('../config.json'),
+  log = require('../lib/log.js')(exports.data.name),
+  chalk = require('chalk')
 
 let repeat
 
 const T = new Twit(config.WTTwitter)
-
-exports.data = {
-  name: 'Waking Titan Terminal Status',
-  command: 'wtStatus'
-}
 
 exports.watcher = (bot) => {
   this.disable()
   repeat = setInterval(async() => {
     checkStatus(bot)
   }, 2 * 60 * 1000)
-  bot.log(exports.data.name, `${exports.data.name} has initialised successfully.`)
+  log.verbose(chalk.green(`${exports.data.name} has initialised successfully.`))
 }
 
 exports.start = (msg, bot, args) => {
