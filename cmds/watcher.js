@@ -9,7 +9,8 @@ exports.data = {
   anywhere: true
 }
 
-const jetpack = require('fs-jetpack')
+const jetpack = require('fs-jetpack'),
+  log = require('../lib/log.js')(exports.data.name)
 
 exports.func = async (msg, args, bot) => {
   let watcherData = jetpack.read('/home/matt/mattBot/watcherData.json', 'json')
@@ -27,7 +28,7 @@ exports.func = async (msg, args, bot) => {
         msg.reply('Selected watcher does not exist.')
       }
     } else if (args[0] === 'enable') {
-      if (bot.watchers.has(args[1]) || ['wakingTitan', 'countdown', 'twitter', 'wtStatus', 'pwtCities', 'gdrive', 'wtCalibration'].indexOf(args[1]) >= 0) {
+      if (bot.watchers.has(args[1]) || jetpack.list('./watchers/').indexOf(`${args[1]}.js`) >= 0) {
         if (!watcherData[args[1]].enable) {
           bot.watcherEnable(args[1], watcherData)
           msg.reply('Enable successful.')
@@ -49,10 +50,10 @@ exports.func = async (msg, args, bot) => {
         msg.reply('Selected watcher does not exist.')
       }
     } else if (args[0] === 'list') {
-      msg.reply('Available watchers are `twitter, wakingTitan and countdown`.')
+      msg.reply('Available watchers are `twitter, wakingTitan, pwtCities, gdrive, steamdb, terminal, twitch, wtCalibration, wtStatus and countdown`.')
     }
   } catch (e) {
     msg.reply('Something went wrong.')
-    bot.error(exports.data.name, e)
+    log.error(`Something went wrong: ${e}`)
   }
 }

@@ -1,6 +1,3 @@
-const request = require('request-promise-native'),
-  moment = require('moment')
-
 exports.data = {
   name: 'Waking Titan Terminal Commands',
   command: 'terminal',
@@ -11,25 +8,29 @@ exports.data = {
   permissions: 0
 }
 
+const request = require('request-promise-native'),
+  moment = require('moment'),
+  log = require('../lib/log.js')(exports.data.name)
+
 let cache = {}
 
 exports.func = async (msg, args, bot) => {
   try {
     let resp
     if (args.length === 0) return msg.reply('You must provide at least 1 command for the bot to run.')
-    bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has sent ${args.join(' ')} to Waking Titan in #${msg.channel.name}.`)
+    log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has sent "${args.join(' ')}" to Waking Titan in #${msg.channel.name} on ${msg.guild.name}.`)
     msg.channel.startTyping()
     if (cache[args.join(' ')]) {
       if (moment().diff(moment.unix(cache[args.join(' ')].last), 'minutes') >= 5) {
-        // bot.log(exports.data.name, 'Cached for too long, requesting.')
+        log.debug('Cached for too long, requesting.')
         resp = await this.runCommand(args[0], args.slice(1))
         cache[args.join(' ')] = {resp: resp, last: moment().unix()}
       } else {
-        // bot.log(exports.data.name, 'Not cached for long enough')
+        log.debug('Not cached for long enough')
         resp = cache[args.join(' ')].resp
       }
     } else {
-      // bot.log(exports.data.name, 'Not cached before - requesting.')
+      log.debug('Not cached before - requesting.')
       resp = await this.runCommand(args[0], args.slice(1))
       cache[args.join(' ')] = {resp: resp, last: moment().unix()}
     }
@@ -46,7 +47,7 @@ exports.func = async (msg, args, bot) => {
       url: 'http://wakingtitan.com'
     }})
   } catch (e) {
-    bot.error(exports.data.name, `Something went wrong: ${e}`)
+    log.error(exports.data.name, `Something went wrong: ${e}`)
     msg.reply('Something\'s gone wrong. <@132479572569620480> check the logs mate.')
     msg.channel.stopTyping(true)
   }

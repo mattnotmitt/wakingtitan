@@ -8,7 +8,13 @@ exports.data = {
   permissions: 0
 }
 
-exports.func = (msg, args, bot) => {
-  bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has requested the bot's source in #${msg.channel.name} on ${msg.guild.name}.`)
-  msg.reply(`The bot's source can be found at https://github.com/artemisbot/wakingtitan`).catch(e => bot.error(exports.data.name, `Message failed to send: ${e}`))
+const log = require('../lib/log.js')(exports.data.name)
+
+exports.func = async (msg, args, bot) => {
+  try {
+    log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has requested the bot's source in #${msg.channel.name} on ${msg.guild.name}.`)
+    await msg.reply(`The bot's source can be found at https://github.com/artemisbot/wakingtitan`)
+  } catch (e) {
+    log.error(`Something went wrong: ${e}`)
+  }
 }

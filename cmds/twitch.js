@@ -73,6 +73,7 @@ exports.func = async (msg, args) => {
     embed.addField('Uptime', humanize(moment().diff(moment(stream.created_at)), {
       round: true
     }), true)
+    embed.addField('Viewers', stream.viewers, true)
   }
   msg.channel.stopTyping()
   msg.channel.send('', {embed: embed})

@@ -1,5 +1,3 @@
-const moment = require('moment')
-
 exports.data = {
   name: 'Ping',
   command: 'ping',
@@ -10,8 +8,11 @@ exports.data = {
   permissions: 3
 }
 
+const moment = require('moment'),
+  log = require('../lib/log.js')(exports.data.name)
+
 exports.func = (msg, args, bot) => {
-  bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has pinged the bot in #${msg.channel.name}.`)
+  log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has pinged the bot in #${msg.channel.name} on ${msg.guild.name}.`)
   msg.channel.send(`Pls wait.`)
     .then(m => m.edit(`🏓 Took ${moment().diff(m.createdAt)} ms.`))
 }

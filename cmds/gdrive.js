@@ -1,16 +1,17 @@
+exports.data = {
+  name: 'Google Drive Fetch',
+  command: 'gdrive',
+  description: 'Google Drive contents listing.',
+  group: 'system',
+  syntax: 'wt gdrive [folder id]',
+  author: 'Matt C: matt@artemisbot.uk',
+  permissions: 2
+}
+
 const google = require('googleapis'),
   Discord = require('discord.js'),
-  auth = require('../config.json').gdrive_service_account
-
-exports.data = {
-  name: 'Google Drive Test',
-  command: 'gdrive',
-  description: 'Ping check.',
-  group: 'system',
-  syntax: 'wt gdrive [folder]',
-  author: 'Matt C: matt@artemisbot.uk',
-  permissions: 4
-}
+  auth = require('../config.json').gdrive_service_account,
+  log = require('../lib/log.js')(exports.data.name)
 
 const jwtClient = new google.auth.JWT(
   auth.client_email,
@@ -38,12 +39,13 @@ exports.func = async (msg, args, bot) => {
     folder.files.forEach(file => {
       embed.addField(`${file.name}`, `${file.mimeType.split('/').slice(-1)[0].split('.').slice(-1)[0].toUpperCase()} | [Link](${file.webViewLink})`, false)
     })
-    msg.channel.send('', {embed: embed})
+    log.info(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has checked ${folder.parentName} (${args[0]}) in #${msg.channel.name} on ${msg.guild.name}.`)
+    await msg.channel.send('', {embed: embed})
   } catch (e) {
     if (e === 'NotFolder') return msg.reply('The provided ID does not correspond to a folder.')
     if (e === 'EmptyFolder') return msg.reply('The provided ID is of an empty folder.')
     if (e === 'DoesNotExist') return msg.reply('The selected ID does not correspond to any known folder.')
-    bot.error(exports.data.name, `Something went wrong: ${e}`)
+    log.error(`Something went wrong: ${e}`)
     msg.reply('Something\'s gone wrong. <@132479572569620480> check the logs mate.')
   }
 }

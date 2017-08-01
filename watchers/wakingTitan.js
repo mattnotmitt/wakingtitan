@@ -197,7 +197,7 @@ const checkSites = async(bot) => {
       // if (site === 'http://superlumina-6c.com') body = body.replace(/\([0-9]+%\)/g, '')
       const pageCont = clean(body),
         oldCont = jetpack.read(`/home/matt/mattBot/watcherData/${data.wakingTitan.sites[site]}-latest.html`)
-      if (pageCont.replace(/( )/g, '').replace(/(\n)/g, '') !== oldCont.replace(/( )/g, '').replace(/(\n)/g, '')) {
+      if (pageCont.replace(/\s/g, '').replace(/>[\s]+</g, '><').replace(/"\s+\//g, '"/') !== oldCont.replace(/\s/g, '').replace(/>[\s]+</g, '><').replace(/"\s+\//g, '"/')) {
         bot.log(exports.data.name, `There's been a change on ${site}`)
         setTimeout(() => {
           request({url: site, jar: cookJar}).then(async body2 => {
@@ -363,5 +363,5 @@ ${table}|}
 }
 
 const clean = (str) => {
-  return str.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"|<!--[\s\S]*?-->/ig, '').replace(/>[\s]+</g, '><').replace(/"\s+\//g, '"/')
+  return str.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<link\b[^>]*>|Email:.+>|data-token=".+?"|email-protection#.+"|<div class="vc_row wpb_row vc_row-fluid no-margin parallax.+>|data-cfemail=".+?"|<!--[\s\S]*?-->/ig, '')
 }

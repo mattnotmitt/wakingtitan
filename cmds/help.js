@@ -1,5 +1,3 @@
-const Discord = require('discord.js')
-
 exports.data = {
   name: 'Help',
   description: 'Lists available commands.',
@@ -10,6 +8,9 @@ exports.data = {
   permissions: 0,
   anywhere: false
 }
+
+const Discord = require('discord.js'),
+  log = require('../lib/log.js')(exports.data.name)
 
 exports.func = async (msg, args, bot) => {
   let commands = bot.commands.keys(),
@@ -23,7 +24,7 @@ exports.func = async (msg, args, bot) => {
   try {
     if (!spec) {
       help.setTitle('__Commands on this bot.__')
-      bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has listed the available commands in #${msg.channel.name}.`)
+      log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has listed the available commands in #${msg.channel.name} on ${msg.guild.name}.`)
       for (let command of commands) {
         cmdData = bot.commands.get(command).data
         if (bot.elevation(msg) >= cmdData.permissions) {
@@ -31,18 +32,18 @@ exports.func = async (msg, args, bot) => {
         } else if (!(command === 'quote' || command === 'emote')) hidden++
       }
       if (hidden > 0) help.setFooter(`${hidden} commands were not shown due to your permission level.`)
-      dm = await msg.author.createDM().catch(err => bot.error(exports.data.name, err))
-      dm.send('If you can\'t see any commands listed, make sure you have link previews enabled in **Settings** -> **Text & Images**.', {
+      dm = await msg.author.createDM().catch(err => log.error(err))
+      await dm.send('If you can\'t see any commands listed, make sure you have link previews enabled in **Settings** -> **Text & Images**.', {
         embed: help
-      }).then(() => bot.delReply(msg, 'I have DMed you with the avaliable commands in this server.')).catch((err) => {
-        bot.error(exports.data.name, `Could not DM user: ${err}.`)
-        bot.delReply(msg, `I could not DM you, please check your settings.`)
+      }).then(() => msg.reply(msg, 'I have DMed you with the avaliable commands in this server.')).catch((err) => {
+        log.error(`Could not DM user: ${err}.`)
+        msg.reply(msg, `I could not DM you, please check your settings.`)
       })
     } else {
-      if (!bot.commands.has(spec)) return bot.delReply(msg, 'The specified command does not exist.')
-      bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has requested additional info on !${spec} in #${msg.channel.name}.`)
+      if (!bot.commands.has(spec)) return msg.reply(msg, 'The specified command does not exist.')
+      log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has requested additional info on !${spec} in #${msg.channel.name} on ${msg.guild.name}.`)
       cmdData = bot.commands.get(spec).data
-      if (bot.elevation(msg) < cmdData.permissions) return bot.delReply(msg, 'You do not have permissions to view this command.')
+      if (bot.elevation(msg) < cmdData.permissions) return msg.reply(msg, 'You do not have permissions to view this command.')
       help.setTitle(`__${cmdData['name']} Command__`)
       help.addField('Description', cmdData['description'], true)
       help.addField('Syntax', cmdData['syntax'], true)
@@ -50,6 +51,6 @@ exports.func = async (msg, args, bot) => {
       await msg.reply('', {embed: help})
     }
   } catch (err) {
-    bot.error(exports.data.name, `Error: ${err}.`)
+    log.error(`Error: ${err}.`)
   }
 }

@@ -5,24 +5,22 @@ exports.data = {
   group: 'system',
   syntax: 'wt reload [command]',
   author: 'Matt C: matt@artemisbot.uk',
-  permissions: 4,
+  permissions: 3,
   anywhere: true
 }
 
-exports.func = async(msg, args, bot) => {
-  let command
-  if (bot.commands.has(args[0])) command = args[0]
-  bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has reloaded command ${command} in #${msg.channel.name}.`)
-  if (!command) return msg.channel.send(`I cannot find the command: ${args[0]}`)
-  msg.channel.send(`Enabling: ${command}`)
-    .then((m) => {
-      bot.reload(command)
-        .then(() => {
-          m.edit(`Successfully reloaded: ${command}`).then((m) => {
-            msg.delete(5000)
-            m.delete(5000)
-          })
-        })
-        .catch(e => m.edit(`Command reload failed: ${command}\n\`\`\`${e.stack}\`\`\``))
-    })
+const log = require('../lib/log.js')(exports.data.name)
+
+exports.func = async (msg, args, bot) => {
+  try {
+    let command
+    if (bot.commands.has(args[0])) command = args[0]
+    if (!command) return msg.channel.send(`I cannot find the command: ${args[0]}`)
+    let m = await msg.channel.send(`Reloading: ${command}`)
+    await bot.reload(command)
+    await m.edit(`Successfully reloaded: ${command}`)
+    log.info(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has reloaded ${args[0]} in #${msg.channel.name} on ${msg.guild.name}.`)
+  } catch (e) {
+    log.error(`Something went wrong: ${e}`)
+  }
 }

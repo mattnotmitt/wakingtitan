@@ -47,7 +47,7 @@ bot.loadWatchers = (bot) => {
       watchers.set(props.data.command, props)
       props.watcher(bot)
     } else {
-      log.verbose('Loader', `Skipped loading ${props.data.name} as it is disabled. ❌`)
+      log.verbose(`Skipped loading ${props.data.name} as it is disabled. ❌`)
       skippedList.push(props.data.name)
     }
   })
@@ -61,22 +61,26 @@ bot.on('ready', () => {
   bot.watchers = bot.loadWatchers(bot)
 })
 
-bot.on('message', (msg) => {
-  if (!(msg.content.startsWith(config.prefix)) || msg.author.id === bot.user.id || msg.author.bot) return
-  let command = msg.content.split(' ')[1],
-    args = msg.content.split(' ').slice(2),
-    cmd
-  if (bot.commands.has(command)) {
-    cmd = bot.commands.get(command)
-  }
-  // console.log(bot.elevation(msg))
-  if (cmd && (cmd.data.anywhere || bot.elevation(msg) >= 3 || bot.permitChan.indexOf(msg.channel.id) >= 0)) {
-    // console.log('passed test')
-    if (bot.elevation(msg) >= cmd.data.permissions) {
-      cmd.func(msg, args, bot)
-    } else {
-      bot.delReply(msg, ':newspaper2: You don\'t have permission to use this command.')
+bot.on('message', async msg => {
+  try {
+    if (!(msg.content.startsWith(config.prefix)) || msg.author.id === bot.user.id || msg.author.bot) return
+    let command = msg.content.split(' ')[1],
+      args = msg.content.split(' ').slice(2),
+      cmd
+    if (bot.commands.has(command)) {
+      cmd = bot.commands.get(command)
     }
+    // console.log(bot.elevation(msg))
+    if (cmd && (cmd.data.anywhere || bot.elevation(msg) >= 3 || bot.permitChan.indexOf(msg.channel.id) >= 0)) {
+      // console.log('passed test')
+      if (bot.elevation(msg) >= cmd.data.permissions) {
+        cmd.func(msg, args, bot)
+      } else {
+        await msg.reply(msg, ':newspaper2: You don\'t have permission to use this command.')
+      }
+    }
+  } catch (e) {
+    log.error(`Something went wrong when handling a message: ${e}`)
   }
 })
 
@@ -157,23 +161,30 @@ bot.watcherDisable = function (watcher, watcherData) {
   })
 }
 
+bot.watcherReload = function (watcher) {
+  return new Promise((resolve, reject) => {
+    try {
+      bot.watchers.get(watcher).disable()
+      delete require.cache[require.resolve(`./watchers/${watcher}.js`)]
+      bot.watchers.delete(watcher)
+      const watchProps = require(`./watchers/${watcher}.js`)
+      bot.watchers.set(watcher, watchProps)
+      bot.watchers.get(watcher).watcher(bot)
+      resolve()
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
 bot.elevation = function (msg) {
   if (msg.author.id === config.ownerID) return 4
   if (['129022124844253184', '146101654981312513'].indexOf(msg.guild.id) < 0) return 0
-  let adminRole = msg.guild.roles.find('name', 'Admins')
   let modRole = msg.guild.roles.find('name', 'Moderators') || msg.guild.roles.find('name', 'Discord Mods')
-  if ((adminRole || modRole) && (msg.member.roles.has(modRole.id) || msg.member.roles.has(adminRole.id))) return 3
+  if (modRole && msg.member.roles.has(modRole.id)) return 3
   let arcRole = msg.guild.roles.find('name', 'Wiki Editors') || msg.guild.roles.find('name', 'ARG Expert') || msg.guild.roles.find('name', 'GD Wiki Editor')
   if (arcRole && msg.member.roles.has(arcRole.id)) return 2
   let detRole = msg.guild.roles.find('name', 'Detective') || msg.guild.roles.find('name', 'Familiar')
   if (detRole && msg.member.roles.has(detRole.id)) return 1
   return 0
-}
-
-bot.delReply = function (msg, message, duration) {
-  duration = duration || 5000
-  msg.reply(message).then((m) => {
-    msg.delete(duration)
-    m.delete(duration)
-  })
 }

@@ -1,7 +1,3 @@
-const Canvas = require('canvas'),
-  jetpack = require('fs-jetpack'),
-  moment = require('moment')
-
 exports.data = {
   name: 'Waking Titan Update Image',
   command: 'update',
@@ -12,19 +8,24 @@ exports.data = {
   permissions: 2
 }
 
+const Canvas = require('canvas'),
+  jetpack = require('fs-jetpack'),
+  moment = require('moment'),
+  log = require('../lib/log.js')(exports.data.name)
+
 exports.func = async (msg, args, bot) => {
   try {
     const data = jetpack.read('cmdData.json', 'json')
-    bot.log(exports.data.name, `${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has updated the image with the text "${args.join(' ')}" in #${msg.channel.name} on ${msg.guild.name}.`)
+    log.verbose(`${msg.member.displayName} (${msg.author.username}#${msg.author.discriminator}) has updated the image with the text "${args.join(' ')}" in #${msg.channel.name} on ${msg.guild.name}.`)
     await genImage(args.join(' '), msg.channel.id)
     if (data.update[msg.channel.id]) {
       await (await msg.channel.fetchMessage(data.update[msg.channel.id])).edit('', {embed: {
-        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.ceil(Math.random())}`},
+        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.random()}`},
         color: 0x993E4D
       }})
     } else {
       await msg.channel.send('', {embed: {
-        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.ceil(Math.random())}`},
+        image: {url: `https://artemisbot.uk/i/${msg.channel.id}.png?${Math.random()}`},
         color: 0x993E4D
       }}).then(m => {
         data.update[msg.channel.id] = m.id
@@ -32,7 +33,7 @@ exports.func = async (msg, args, bot) => {
       })
     }
   } catch (e) {
-    bot.error(exports.data.name, `Something went wrong: ${e}`)
+    log.error(`Something went wrong: ${e}`)
     msg.reply('Something\'s gone wrong. <@132479572569620480> check the logs mate.')
   }
 }
