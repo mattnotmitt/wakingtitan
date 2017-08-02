@@ -10,7 +10,9 @@ const log = require('../lib/log.js')(exports.data.name);
 const config = require('../config.json');
 const jetpack = require('fs-jetpack');
 const Discord = require('discord.js');
+const Twit = require('twit');
 
+const T = new Twit(config.WTTwitter);
 const ml = new MailListener({
 	username: config.mailUsername,
 	password: config.mailPassword,
@@ -60,6 +62,11 @@ exports.watcher = (bot) => {
 					},
 					timestamp: mail.date
 				});
+				if (mail.from[0].address === 'info@wakingtitan.com') {
+					await T.post('statuses/update', {
+						status: mail.subject.length <= (76 - mail.from[0].name.length) ? `A new email has been received from ${mail.from[0].name} with subject ${mail.subject}" #WakingTitan` : `A new email has been received from ${mail.from[0].name} with subject "${mail.subject.slice(0, 75 - mail.from[0].name.length)}…" #WakingTitan`
+					});
+				}
 				for (let channel of data.mail.addresses[mail.from[0].address]) {
 					await bot.channels.get(channel).send('', {
 						embed: embed

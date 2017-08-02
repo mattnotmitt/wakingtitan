@@ -7,11 +7,13 @@ exports.data = {
 const request = require('request-promise-native');
 const jetpack = require('fs-jetpack');
 const Discord = require('discord.js');
-const	log = require('../lib/log.js')(exports.data.name);
+const log = require('../lib/log.js')(exports.data.name);
 const moment = require('moment');
 const humanize = require('humanize-duration');
 const config = require('../config.json');
+const Twit = require('twit');
 
+const T = new Twit(config.WTTwitter);
 let repeat;
 
 const r = request.defaults({
@@ -69,62 +71,69 @@ const checkStream = bot => {
 	const data = jetpack.read('watcherData.json', 'json');
 	log.debug('Checking for channels going live.');
 	Object.keys(data.twitch.users).forEach(async id => {
-		const stream = await checkLive(id);
-		if (!stream) {
-			if (data.twitch.users[id].live) {
-				data.twitch.users[id].live = false;
-				return jetpack.write('/home/matt/mattBot/watcherData.json', data);
-			} else return;
-		}
-		if (data.twitch.users[id].live) return;
-		let embed = new Discord.RichEmbed({
-			color: 6570405,
-			author: {
-				icon_url: stream.channel.logo,
-				name: `${stream.channel.display_name} on Twitch.tv has just gone live!`,
-				url: stream.channel.url
-			},
-			fields: [
-				{
-					name: 'Status',
-					value: stream.channel.status || 'None',
-					inline: false
-				},
-				{
-					name: 'Game',
-					value: stream.channel.game || 'None',
-					inline: true
-				},
-				{
-					name: 'Followers',
-					value: stream.channel.followers,
-					inline: true
-				},
-				{
-					name: 'Viewers',
-					value: stream.viewers,
-					inline: true
-				},
-				{
-					name: 'Uptime',
-					value: humanize(moment().diff(moment(stream.created_at)), {round: true}),
-					inline: true
-				}
-			],
-			thumbnail: {url: stream.preview.medium},
-			timestamp: moment().toISOString(),
-			footer: {
-				icon_url: 'http://www.newdesignfile.com/postpic/2014/02/twitch-logo_99113.png',
-				text: `|`
+		try {
+			const stream = await checkLive(id);
+			if (!stream) {
+				if (data.twitch.users[id].live) {
+					data.twitch.users[id].live = false;
+					return jetpack.write('/home/matt/mattBot/watcherData.json', data);
+				} else return;
 			}
-		});
-		for (let channel of data.twitch.users[id].channels) {
-			bot.channels.get(channel).send('', {
-				embed: embed
+			if (data.twitch.users[id].live) return;
+			let embed = new Discord.RichEmbed({
+				color: 6570405,
+				author: {
+					icon_url: stream.channel.logo,
+					name: `${stream.channel.display_name} on Twitch.tv has just gone live!`,
+					url: stream.channel.url
+				},
+				fields: [
+					{
+						name: 'Status',
+						value: stream.channel.status || 'None',
+						inline: false
+					},
+					{
+						name: 'Game',
+						value: stream.channel.game || 'None',
+						inline: true
+					},
+					{
+						name: 'Followers',
+						value: stream.channel.followers,
+						inline: true
+					},
+					{
+						name: 'Viewers',
+						value: stream.viewers,
+						inline: true
+					},
+					{
+						name: 'Uptime',
+						value: humanize(moment().diff(moment(stream.created_at)), {round: true}),
+						inline: true
+					}
+				],
+				thumbnail: {url: stream.preview.medium},
+				timestamp: moment().toISOString(),
+				footer: {
+					icon_url: 'http://www.newdesignfile.com/postpic/2014/02/twitch-logo_99113.png',
+					text: `|`
+				}
 			});
+			if (id === '163329949') {
+				await T.post('statuses/update', {status: `${stream.channel.url} has gone live! #WakingTitan`});
+			}
+			for (let channel of data.twitch.users[id].channels) {
+				bot.channels.get(channel).send('', {
+					embed: embed
+				});
+			}
+			data.twitch.users[id].live = true;
+			jetpack.write('/home/matt/mattBot/watcherData.json', data);
+		} catch (e) {
+			log.error(`Something went wrong: ${e}`);
 		}
-		data.twitch.users[id].live = true;
-		jetpack.write('/home/matt/mattBot/watcherData.json', data);
 	});
 };
 
