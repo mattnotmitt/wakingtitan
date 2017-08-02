@@ -1,20 +1,17 @@
 {
-  "prefix": "wt",
+  "prefix": "",
   "token": "",
-  "activeChannels": [""],
+  "activeChannels": [],
   "ownerID": "",
-  "twitter": {
-    "consumer_key": "",
-    "consumer_secret": "",
-    "access_token": "",
-    "access_token_secret": ""
-  },
+  "twitch_clientid": "",
   "WTTwitter": {
     "consumer_key": "",
     "consumer_secret": "",
     "access_token": "",
     "access_token_secret": ""
   },
+  "youtubeKey": "",
+  "steamKey": "",
   "wiki_user": "",
   "wiki_pass": "",
   "gdrive_service_account": {
@@ -28,5 +25,6 @@
     "token_uri": "",
     "auth_provider_x509_cert_url": "",
     "client_x509_cert_url": ""
-  }
+  },
+  "dbPass": ""
 }

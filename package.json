@@ -4,26 +4,29 @@
   "description": "Discord Bot for Waking Titan ARG",
   "main": "main.js",
   "dependencies": {
-    "chalk": "^1.1.3",
+    "canvas": "^1.6.5",
+    "chalk": "^2.0.1",
     "child-process-promise": "^2.2.1",
     "css-select": "^1.3.0-rc0",
     "discord.js": "^11.1.0",
     "fs-jetpack": "^0.10.5",
+    "googleapis": "^20.1.0",
     "he": "^1.1.1",
     "humanize-duration": "^3.10.0",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "nodemw": "^0.10.1",
+    "pg": "^7.0.2",
+    "pg-hstore": "^2.3.2",
     "request-promise-native": "^1.0.4",
+    "sequelize": "^4.4.2",
     "strftime": "^0.10.0",
-    "twit": "^2.2.9"
+    "twit": "^2.2.9",
+    "winston": "^2.3.1",
+    "winston-daily-rotate-file": "^1.4.6"
   },
   "devDependencies": {
-    "eslint": "^3.12.2",
-    "eslint-config-standard": "^6.2.1",
-    "eslint-plugin-promise": "^3.4.0",
-    "eslint-plugin-react": "^6.8.0",
-    "eslint-plugin-standard": "^2.0.1"
+    "happiness": "^10.0.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -34,8 +37,7 @@
   },
   "keywords": [
     "discord",
-    "discord.js",
-    "selfbot"
+    "discord.js"
   ],
   "author": "Matt C [matt@artemisbot.uk]",
   "license": "MIT",
