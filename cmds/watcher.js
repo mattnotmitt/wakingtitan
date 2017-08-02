@@ -49,6 +49,17 @@ exports.func = async (msg, args, bot) => {
 			} else {
 				msg.reply('Selected watcher does not exist.');
 			}
+		} else if (args[0] === 'reload') {
+			if (bot.watchers.has(args[1])) {
+				if (watcherData[args[1]].enable) {
+					bot.watcherReload(args[1], watcherData);
+					msg.reply('Reload successful.');
+				} else {
+					msg.reply('Reload failed: watcher already disabled.');
+				}
+			} else {
+				msg.reply('Selected watcher does not exist.');
+			}
 		} else if (args[0] === 'list') {
 			msg.reply('Available watchers are `twitter, wakingTitan, pwtCities, gdrive, steamdb, terminal, twitch and countdown`.');
 		}
