@@ -68,18 +68,27 @@ exports.disable = () => {
 
 // Declare primary functions below here
 const checkStream = bot => {
-	const data = jetpack.read('watcherData.json', 'json');
+	let data = jetpack.read('watcherData.json', 'json');
 	log.debug('Checking for channels going live.');
 	Object.keys(data.twitch.users).forEach(async id => {
 		try {
-			const stream = await checkLive(id);
+			let stream = await checkLive(id);
 			if (!stream) {
 				if (data.twitch.users[id].live) {
-					data.twitch.users[id].live = false;
-					return jetpack.write('/home/matt/mattBot/watcherData.json', data);
+					log.verbose(`${id} on Twitch.tv might have gone offline!`);
+					return setTimeout(async () => {
+						stream = await checkLive(id);
+						if (!stream) {
+							data = jetpack.read('watcherData.json', 'json');
+							data.twitch.users[id].live = false;
+							log.info(`${id} on Twitch.tv has gone offline!`);
+							jetpack.write('/home/matt/mattBot/watcherData.json', data);
+						} else log.verbose(`${id} didn't go offline.`);
+					}, 10 * 1000);
 				} else return;
 			}
-			if (data.twitch.users[id].live) return;
+			if (data.twitch.users[id].live) return log.debug(`${stream.channel.display_name} was already online.`);
+			log.info(`${stream.channel.display_name} on Twitch.tv has just gone live!`);
 			let embed = new Discord.RichEmbed({
 				color: 6570405,
 				author: {
