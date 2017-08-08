@@ -25,7 +25,7 @@ exports.watcher = async bot => {
 	postCities(bot);
 	repeat = setInterval(() => {
 		postCities(bot);
-	}, 2 * 60 * 1000);
+	}, 0.5 * 60 * 1000);
 };
 
 exports.start = (msg, bot, args) => {
@@ -132,7 +132,7 @@ const postCities = async (bot) => {
 const getCities = () => {
 	return new Promise(async (resolve, reject) => {
 		try {
-			let cityRaw = (await request({url: 'https://project-wt.com/cities/1', json: true})).cities;
+			let cityRaw = (await request({url: 'https://project-wt.com/cities/4', json: true})).cities;
 			let cities = {};
 			cityRaw.forEach(city => {
 				cities[city.name] = city.isReady ? city.isReady : city.progression;

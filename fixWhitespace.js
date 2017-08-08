@@ -6,7 +6,7 @@ const jetpack = require('fs-jetpack');
 const strftime = require('strftime');
 
 const data = jetpack.read('./watcherData.json', 'json');
-let sites = data.wakingTitan.sites;
+let sites = data.wtSites.sites;
 for (let site in sites) {
 	let cookJar = request.jar();
 	if (site === 'https://wakingtitan.com') {

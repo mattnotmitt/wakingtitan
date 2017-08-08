@@ -8,7 +8,7 @@ const chalk = require('chalk');
 const bot = new Discord.Client();
 bot.permitChan = config.activeChannels;
 bot.error = (source, msg) => {
-	bot.channels.get('338712920466915329').send(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] - | ${source} | - ${msg}`);
+	bot.channels.get('342084403830194188').send(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] - | ${source} | - ${msg}`);
 	log.error(msg);
 };
 bot.log = (source, msg) => {
@@ -76,7 +76,7 @@ bot.on('message', async msg => {
 			if (bot.elevation(msg) >= cmd.data.permissions) {
 				cmd.func(msg, args, bot);
 			} else {
-				await msg.reply(msg, ':newspaper2: You don\'t have permission to use this command.');
+				await msg.reply(':newspaper2: You don\'t have permission to use this command.');
 			}
 		}
 	} catch (e) {

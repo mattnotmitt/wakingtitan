@@ -30,8 +30,8 @@ exports.watcher = bot => {
 	this.disable();
 	repeat = setInterval(() => {
 		checkStream(bot);
-	}, 20 * 1000); // x is number of minutes between repeats
-	bot.log(exports.data.name, `${exports.data.name} has initialised successfully.`);
+	}, 30 * 1000); // x is number of minutes between repeats
+	log.verbose(`${exports.data.name} has initialised successfully.`);
 };
 
 exports.start = async (msg, bot, args) => {
@@ -84,7 +84,7 @@ const checkStream = bot => {
 							log.info(`${id} on Twitch.tv has gone offline!`);
 							jetpack.write('/home/matt/mattBot/watcherData.json', data);
 						} else log.verbose(`${id} didn't go offline.`);
-					}, 10 * 1000);
+					}, 20 * 1000);
 				} else return;
 			}
 			if (data.twitch.users[id].live) return log.debug(`${stream.channel.display_name} was already online.`);

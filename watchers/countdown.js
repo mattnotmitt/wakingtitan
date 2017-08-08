@@ -70,5 +70,5 @@ exports.watcher = async (bot) => {
 				}
 			}
 		}
-	}, 5000);
+	}, 10000);
 };
